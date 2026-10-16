@@ -1,0 +1,58 @@
+{
+  // Extend the Quickshell Omarchy menu with JSONC.
+  //
+  // IDs are object keys. The parent is inferred from the dotted id, so
+  // "personal.notes" appears under "personal", and "personal" appears on the
+  // root menu. Reuse an existing id to override/extend it.
+  //
+  // Fields:
+  //   icon        Nerd Font glyph shown in the icon column.
+  //   label       Visible row title.
+  //   action      Shell command to run. If omitted, the row is a submenu.
+  //   target      Existing submenu id to open. Use for links/aliases.
+  //   provider    Runtime provider function/command returning JSON rows.
+  //   aliases     alternate `omarchy menu summon <name>` routes; also searchable.
+  //   description Optional subtitle and extra search text.
+  //   when        Shell condition; hide row when it fails.
+  //   checked     Shell condition; append ✓ when it succeeds.
+  //
+  // Examples:
+  // "personal": {"icon":"","label":"Personal"},
+  // "personal.notes": {"icon":"󰎞","label":"Notes","action":"omarchy-launch-editor ~/notes"},
+  // "personal.files": {"icon":"","label":"Files","action":"uwsm-app -- nautilus ~/Documents"},
+  //
+  // Only use provider when a provider_name function or command named "name"
+  // returns JSON rows. Static submenus only need dotted ids.
+  //
+  // Example: replace the default About action by reusing the same id. Existing
+  // fields are kept unless overridden.
+  // "about": {"icon":"","label":"About","action":"omarchy-launch-or-focus-tui \"zsh -c 'fastfetch; read -k 1'\""
+  // ---- Proton VPN -------------------------------------------------------
+  // Connected state is read from the proton0 link, which is free. `checked`
+  // uses `is-country`, which reads only the cache -- the menu evaluates one
+  // per row, and spawning protonvpn five times would stall the submenu.
+  "vpn": {"icon":"","label":"VPN","description":"Proton VPN — connect, switch country, disconnect"},
+
+  "vpn.connect": {
+    "icon":"","label":"Connect — fastest server",
+    "action":"~/.config/omarchy/bar/scripts/protonvpn connect",
+    "when":"! ip link show proton0 >/dev/null 2>&1"
+  },
+  "vpn.disconnect": {
+    "icon":"","label":"Disconnect",
+    "action":"~/.config/omarchy/bar/scripts/protonvpn disconnect",
+    "when":"ip link show proton0 >/dev/null 2>&1"
+  },
+  "vpn.status": {
+    "icon":"","label":"Connection details",
+    "description":"Server, location, load and protocol",
+    "action":"notify-send -a 'Proton VPN' -i network-vpn 'Proton VPN' \"$(~/.config/omarchy/bar/scripts/protonvpn details)\""
+  },
+
+  "vpn.country": {"icon":"","label":"Switch country","description":"Proton Free tier locations"},
+  "vpn.country.nl": {"icon":"🇳🇱","label":"Netherlands","action":"~/.config/omarchy/bar/scripts/protonvpn connect NL","checked":"~/.config/omarchy/bar/scripts/protonvpn is-country NL"},
+  "vpn.country.us": {"icon":"🇺🇸","label":"United States","action":"~/.config/omarchy/bar/scripts/protonvpn connect US","checked":"~/.config/omarchy/bar/scripts/protonvpn is-country US"},
+  "vpn.country.jp": {"icon":"🇯🇵","label":"Japan","action":"~/.config/omarchy/bar/scripts/protonvpn connect JP","checked":"~/.config/omarchy/bar/scripts/protonvpn is-country JP"},
+  "vpn.country.ro": {"icon":"🇷🇴","label":"Romania","action":"~/.config/omarchy/bar/scripts/protonvpn connect RO","checked":"~/.config/omarchy/bar/scripts/protonvpn is-country RO"},
+  "vpn.country.pl": {"icon":"🇵🇱","label":"Poland","action":"~/.config/omarchy/bar/scripts/protonvpn connect PL","checked":"~/.config/omarchy/bar/scripts/protonvpn is-country PL"}
+}

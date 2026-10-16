@@ -1,0 +1,172 @@
+#!/usr/bin/env bash
+# Proton VPN for Omarchy: bar widget + menu actions.
+#
+#   show              Waybar-style JSON for the bar
+#   toggle            connect fastest / disconnect (bar click)
+#   connect [CC]      connect to a country code, or fastest when omitted
+#   disconnect        disconnect
+#   details           multi-line summary (for the Status notification)
+#   is-country CC     exit 0 if currently connected to CC -- CACHE ONLY, never
+#                     spawns protonvpn, because the menu evaluates one of these
+#                     per row and 1.5s each would make the submenu unusable
+#
+# `protonvpn status` costs ~1.5s of Python start-up, far too much to pay on a
+# bar tick. Two things keep this cheap: the disconnected case never spawns it
+# (the proton0 link either exists or it doesn't, and that read is free), and
+# the connected case caches the detail, so state flips instantly while the
+# label behind it refreshes on a slower clock.
+
+set -euo pipefail
+
+IFACE=proton0
+CACHE="${XDG_RUNTIME_DIR:-/tmp}/omarchy-protonvpn.cache"
+CACHE_TTL=30
+APP="Proton VPN"
+ICON=network-vpn
+
+# Countries on the Proton Free tier. Anything else needs a paid plan, and the
+# menu says so rather than offering a row that errors.
+FREE="NL US JP RO PL"
+
+up() { ip link show "$IFACE" >/dev/null 2>&1; }
+note() { notify-send -a "$APP" -i "$ICON" ${2:+-u "$2"} "$APP" "$1"; }
+
+flag() { # ISO code -> regional-indicator emoji
+  local c=${1^^} a b
+  [ ${#c} -eq 2 ] || { printf ''; return; }
+  printf '%b' "$(printf '\\U%08x\\U%08x' \
+    $((0x1F1E6 + $(printf '%d' "'${c:0:1}") - 65)) \
+    $((0x1F1E6 + $(printf '%d' "'${c:1:1}") - 65)))"
+}
+
+# On a left/right bar every module is only as wide as the bar (~28px), so a
+# horizontal label gets clipped. Stack it over two short lines instead.
+vertical_bar() {
+  local pos
+  pos=$(jq -r '.bar.position // "top"' "${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/shell.json" 2>/dev/null) || return 1
+  [ "$pos" = "left" ] || [ "$pos" = "right" ]
+}
+
+refresh_cache() {
+  if timeout 10 protonvpn status >"$CACHE.tmp" 2>/dev/null && [ -s "$CACHE.tmp" ]; then
+    mv -f "$CACHE.tmp" "$CACHE" 2>/dev/null || true
+  else
+    rm -f "$CACHE.tmp" 2>/dev/null || true
+  fi
+}
+
+raw_status() {
+  if [ -s "$CACHE" ]; then
+    local age=$(( $(date +%s) - $(stat -c %Y "$CACHE" 2>/dev/null || echo 0) ))
+    [ "$age" -lt "$CACHE_TTL" ] && { cat "$CACHE"; return 0; }
+  fi
+  refresh_cache
+  cat "$CACHE" 2>/dev/null
+}
+
+field() { printf '%s\n' "$1" | sed -n "s/^$2: *//p" | head -1; }
+
+# "NL-FREE#283 in Amsterdam, Netherlands" -> server / where
+parse() {
+  RAW=$(raw_status || true)
+  SERVER=$(printf '%s\n' "$RAW" | sed -n 's/^Server: *\(.*\) in .*/\1/p' | head -1)
+  WHERE=$( printf '%s\n' "$RAW" | sed -n 's/^Server: *.* in \(.*\)/\1/p'  | head -1)
+  [ -n "$SERVER" ] || SERVER=$(field "$RAW" Server)
+  LOAD=$(field "$RAW" Load)
+  PROTO=$(field "$RAW" Protocol)
+  CODE=${SERVER%%-*}; CODE=${CODE%%#*}
+}
+
+connect_to() {
+  local cc=${1:-}
+  if [ -n "$cc" ]; then
+    cc=${cc^^}
+    if ! printf '%s\n' $FREE | grep -qx "$cc"; then
+      note "$(flag "$cc") $cc is not on the Free tier.\nFree: $FREE" critical; exit 1
+    fi
+    note "$(flag "$cc") Connecting to $cc..."
+    if timeout 60 protonvpn connect --country "$cc" >/dev/null 2>&1; then
+      rm -f "$CACHE"; parse
+      note "$(flag "$CODE") Connected — ${WHERE:-$cc}${SERVER:+\n$SERVER}${LOAD:+ · load $LOAD}"
+    else
+      note "Could not connect to $cc" critical; exit 1
+    fi
+  else
+    note "Connecting to the fastest server..."
+    if timeout 60 protonvpn connect >/dev/null 2>&1; then
+      rm -f "$CACHE"; parse
+      note "$(flag "$CODE") Connected — ${WHERE:-fastest}${SERVER:+\n$SERVER}${LOAD:+ · load $LOAD}"
+    else
+      note "Could not connect. Signed in? Try: protonvpn signin" critical; exit 1
+    fi
+  fi
+}
+
+disconnect_now() {
+  note "Disconnecting..."
+  if timeout 40 protonvpn disconnect >/dev/null 2>&1; then
+    rm -f "$CACHE"; note "Disconnected — traffic is no longer tunnelled"
+  else
+    note "Failed to disconnect" critical; exit 1
+  fi
+}
+
+case "${1:-show}" in
+  toggle)     up && disconnect_now || connect_to "" ; exit 0 ;;
+  connect)    connect_to "${2:-}" ; exit 0 ;;
+  disconnect) up && disconnect_now || note "Already disconnected" ; exit 0 ;;
+  details)
+    if ! up; then echo "Disconnected"; exit 0; fi
+    parse
+    printf '%s %s\n' "$(flag "$CODE")" "${WHERE:-unknown location}"
+    [ -n "$SERVER" ] && printf 'Server: %s\n' "$SERVER"
+    [ -n "$LOAD" ]   && printf 'Load: %s\n' "$LOAD"
+    [ -n "$PROTO" ]  && printf 'Protocol: %s\n' "$PROTO"
+    exit 0 ;;
+  is-country)
+    # Cache-only on purpose: called once per menu row.
+    up || exit 1
+    [ -s "$CACHE" ] || exit 1
+    grep -q "^Server: ${2^^}[-#]" "$CACHE" || exit 1
+    exit 0 ;;
+  json)
+    # One object for the Quickshell panel. Counters come from sysfs (free);
+    # the server detail comes from the cache, so an open panel never pays the
+    # ~1.5s protonvpn start-up more than once per CACHE_TTL.
+    if ! up; then
+      printf '{"connected":false}\n'; exit 0
+    fi
+    parse
+    rx=$(cat "/sys/class/net/$IFACE/statistics/rx_bytes" 2>/dev/null || echo 0)
+    tx=$(cat "/sys/class/net/$IFACE/statistics/tx_bytes" 2>/dev/null || echo 0)
+    ip4=$(ip -4 -o addr show "$IFACE" 2>/dev/null | awk '{print $4}' | cut -d/ -f1 | head -1)
+    jq -nc --arg server "$SERVER" --arg where "$WHERE" --arg load "$LOAD" \
+           --arg proto "$PROTO" --arg code "$CODE" --arg ip "$ip4" \
+           --arg iface "$IFACE" --arg flag "$(flag "$CODE")" \
+           --argjson rx "${rx:-0}" --argjson tx "${tx:-0}" \
+           '{connected:true,server:$server,where:$where,load:$load,protocol:$proto,
+             code:$code,flag:$flag,ip:$ip,iface:$iface,rx:$rx,tx:$tx}'
+    exit 0 ;;
+  show) ;;
+  *) echo "usage: protonvpn {show|json|toggle|connect [CC]|disconnect|details|is-country CC}" >&2; exit 2 ;;
+esac
+
+if ! up; then
+  if vertical_bar; then t='󰦝\\noff'; else t='󰦝 off'; fi
+  printf '{"text":"%s","tooltip":"%s","class":"disconnected"}\n' \
+    "$t" 'Proton VPN — disconnected\nClick to connect to the fastest server'
+  exit 0
+fi
+
+parse
+[ -n "$CODE" ] || CODE=on   # link is up, so we are connected even with no detail
+
+tip="Proton VPN — connected"
+[ -n "$WHERE" ]  && tip="$tip\\n$(flag "$CODE") $WHERE"
+[ -n "$SERVER" ] && tip="$tip\\nServer: $SERVER"
+[ -n "$LOAD" ]   && tip="$tip\\nLoad: $LOAD"
+[ -n "$PROTO" ]  && tip="$tip\\nProtocol: $PROTO"
+tip="$tip\\n\\nClick to disconnect"
+
+if vertical_bar; then t="󰌘\\n$CODE"; else t="󰌘 $CODE"; fi
+printf '{"text":"%s","tooltip":"%s","class":"connected"}\n' "$t" "$tip"

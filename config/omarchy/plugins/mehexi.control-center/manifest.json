@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "mehexi.control-center",
+  "name": "Control Center",
+  "version": "1.0.0",
+  "author": "mehexi",
+  "license": "MIT",
+  "description": "macOS-style control center behind a profile picture: network, bluetooth, focus, media, display, sound and quick actions.",
+  "kinds": ["bar-widget"],
+  "entryPoints": { "barWidget": "Panel.qml" },
+  "barWidget": {
+    "displayName": "Control Center",
+    "description": "Profile picture that opens a macOS-style control center.",
+    "category": "System",
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "defaults": { "avatar": "~/.face", "name": "" },
+    "schema": [
+      { "key": "avatar", "type": "string", "label": "Profile image path", "defaultValue": "~/.face" },
+      { "key": "name", "type": "string", "label": "Display name (blank = username)", "defaultValue": "" }
+    ]
+  }
+}

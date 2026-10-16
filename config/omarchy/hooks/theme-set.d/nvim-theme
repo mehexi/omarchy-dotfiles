@@ -1,0 +1,20 @@
+#!/bin/bash
+# Extract Neovim colorscheme from current Omarchy theme and trigger reload
+
+THEME_NAME="${1:-}"
+CACHE_DIR="$HOME/.cache/omarchy-nvim"
+NVIM_THEME_FILE="$HOME/.config/omarchy/current/theme/neovim.lua"
+COLORSCHEME_FILE="$CACHE_DIR/colorscheme"
+
+mkdir -p "$CACHE_DIR"
+
+# Extract colorscheme name from the theme's neovim.lua
+if [[ -f $NVIM_THEME_FILE ]]; then
+  COLORN=$(grep -oP 'vim\.cmd\.colorscheme\("\K[^"]+' "$NVIM_THEME_FILE" 2>/dev/null)
+fi
+
+if [[ -z $COLORN ]]; then
+  COLORN="tokyonight-night"
+fi
+
+echo "$COLORN" > "$COLORSCHEME_FILE"

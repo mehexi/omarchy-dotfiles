@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Launch opencode from the focused terminal's current working directory
+
+active_window=$(hyprctl activewindow -j 2>/dev/null)
+pid=$(echo "$active_window" | jq -r '.pid')
+class=$(echo "$active_window" | jq -r '.class // empty')
+
+# Known terminal classes
+terminals=("Alacritty" "kitty" "ghostty" "wezterm" "foot" "tilix" "gnome-terminal")
+is_terminal=0
+for term in "${terminals[@]}"; do
+  [[ "$class" == "$term" ]] && { is_terminal=1; break; }
+done
+
+cwd=""
+if [ $is_terminal -eq 1 ] && [ -n "$pid" ] && [ "$pid" != "null" ]; then
+  # Find shell child process
+  shell_pid=$(ps --ppid "$pid" -o pid= -o comm= 2>/dev/null | awk '{print $1}' | while read pid2 comm; do
+    case "$comm" in
+      bash|zsh|fish|sh|ksh) echo "$pid2"; break ;;
+    esac
+  done)
+  [ -n "$shell_pid" ] && cwd=$(readlink -f "/proc/$shell_pid/cwd" 2>/dev/null)
+fi
+
+# Fallback to terminal's own cwd
+[ -z "$cwd" ] && [ -n "$pid" ] && [ "$pid" != "null" ] && cwd=$(readlink -f "/proc/$pid/cwd" 2>/dev/null)
+[ -z "$cwd" ] && cwd="$HOME"
+[ ! -d "$cwd" ] && cwd="$HOME"
+
+cd "$cwd" || exit 1
+exec omarchy-launch-tui opencode "$cwd"

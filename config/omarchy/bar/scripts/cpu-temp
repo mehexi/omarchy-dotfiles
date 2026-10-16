@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Print CPU package temperature for the Omarchy bar (Waybar-style JSON).
+# Resolves the coretemp hwmon at runtime so it survives hwmon renumbering.
+
+set -euo pipefail
+
+# On a left/right bar every module is only as wide as the bar (~28px), so the
+# horizontal " 56°C" label gets clipped. Stack it over two short lines instead.
+vertical_bar() {
+  local pos
+  pos=$(jq -r '.bar.position // "top"' "${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/shell.json" 2>/dev/null) || return 1
+  [ "$pos" = "left" ] || [ "$pos" = "right" ]
+}
+
+input=""
+for name in /sys/class/hwmon/hwmon*/name; do
+  [ "$(cat "$name" 2>/dev/null)" = "coretemp" ] || continue
+  dir=$(dirname "$name")
+  # Prefer the "Package id 0" label; fall back to the first temp input.
+  for label in "$dir"/temp*_label; do
+    [ -e "$label" ] || continue
+    if grep -qi 'package' "$label" 2>/dev/null; then
+      input="${label%_label}_input"
+      break
+    fi
+  done
+  [ -n "$input" ] || input="$dir/temp1_input"
+  break
+done
+
+if [ -z "$input" ] || [ ! -r "$input" ]; then
+  printf '{"text":"n/a","tooltip":"CPU temperature unavailable","class":"error"}\n'
+  exit 0
+fi
+
+milli=$(cat "$input")
+c=$(( (milli + 500) / 1000 ))   # round to nearest degree
+
+if   [ "$c" -ge 85 ]; then cls="critical"
+elif [ "$c" -ge 70 ]; then cls="warning"
+else cls="normal"; fi
+
+if vertical_bar; then
+  text="$c\\n°C"
+else
+  text=" $c°C"
+fi
+
+printf '{"text":"%s","tooltip":"CPU package temperature: %d°C","class":"%s"}\n' "$text" "$c" "$cls"

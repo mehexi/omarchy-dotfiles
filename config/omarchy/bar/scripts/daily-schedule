@@ -1,0 +1,139 @@
+#!/usr/bin/env bash
+
+# ── Daily Schedule for the Omarchy bar ──
+# Edit SCHEDULE below to customize your routine.
+# Format: "start_min|end_min|nerdfont_icon|label|class"
+
+SCHEDULE=(
+  "0|30|󰧹|Tidy desk|tidy"
+  "30|120|󱍸|Free time|free"
+  "120|600|󰢠|Sleep|sleep"
+  "600|615|󰃤|Wake up|morning"
+  "615|645|󰚿|Freshen up|morning"
+  "645|675|󰁂|Breakfast|morning"
+  "675|690|󰉋|Plan day|morning"
+  "690|810|󰊴|Gaming time|gaming"
+  "810|855|󰋰|Break|break"
+  "855|975|󰑭|Deep Work #2|focus"
+  "975|1005|󰍕|Lunch|break"
+  "1005|1110|󰚥|Secondary work|work"
+  "1110|1170|󰚬|Exercise|exercise"
+  "1170|1215|󰍕|Dinner|break"
+  "1215|1320|󰌠|Project|project"
+  "1320|1350|󰋼|Relax|break"
+  "1350|1440|󰆼|Learning|learning"
+)
+
+now=$((10#$(date +%H) * 60 + 10#$(date +%M)))
+
+find_current() {
+  for i in "${!SCHEDULE[@]}"; do
+    IFS='|' read -r s e icon name class <<< "${SCHEDULE[$i]}"
+    [ "$now" -ge "$s" ] && [ "$now" -lt "$e" ] && {
+      echo "$s|$e|$icon|$name|$class|$i"; return
+    }
+  done
+  echo "120|600|󰢠|Sleep|sleep|2"
+}
+
+IFS='|' read -r cs ce ci cn cc idx <<< "$(find_current)"
+
+rem=$((ce - now))
+[ "$rem" -gt 0 ] && rem_txt="${rem}m" || rem_txt=""
+
+# A left/right bar gives each module only the bar's width (~28px), so the
+# full "icon Label 13m" line gets clipped. Show the icon over the remaining
+# time instead; the tooltip and click still carry the full schedule.
+vertical_bar() {
+  local pos
+  pos=$(jq -r '.bar.position // "top"' "${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/shell.json" 2>/dev/null) || return 1
+  [ "$pos" = "left" ] || [ "$pos" = "right" ]
+}
+
+if vertical_bar; then
+  # Two glyphs is all a 28px bar fits: bare minutes under an hour, then
+  # whole hours ("8h") so a long block like sleep still reads at a glance.
+  text="$ci"
+  if [ "$rem" -ge 60 ]; then
+    text="$text\\n$((rem / 60))h"
+  elif [ "$rem" -gt 0 ]; then
+    text="$text\\n$rem"
+  fi
+else
+  text="$ci $cn"
+  [ -n "$rem_txt" ] && text="$text $rem_txt"
+fi
+
+# ── tooltip ──
+tooltip="Now: $ci $cn"
+[ -n "$rem_txt" ] && tooltip="$tooltip - ${rem_txt} left"
+tooltip="$tooltip\n"
+
+total=$((ce - cs)); elapsed=$((now - cs)); pct=$((elapsed * 100 / total))
+[ "$pct" -gt 100 ] && pct=100
+tooltip="$tooltip["
+for ((j=0; j<10; j++)); do
+  [ "$((j * 10))" -lt "$pct" ] && tooltip="$tooltip#" || tooltip="$tooltip."
+done
+tooltip="$tooltip] $pct%\n"
+
+tooltip="$tooltip\nSchedule:\n"
+
+fmt_time() {
+  local raw_h=$(($1 / 60)) m=$(($1 % 60)) h suf="am"
+  [ "$raw_h" -ge 12 ] && suf="pm"
+  [ "$raw_h" -gt 12 ] && h=$((raw_h - 12)) || h="$raw_h"
+  [ "$h" -eq 0 ] && h=12
+  [ "$raw_h" -eq 24 ] && suf="am"
+  printf "%d:%02d%s" "$h" "$m" "$suf"
+}
+
+for i in "${!SCHEDULE[@]}"; do
+  IFS='|' read -r s e icon name class <<< "${SCHEDULE[$i]}"
+  ts=$(fmt_time "$s"); te=$(fmt_time "$e")
+  [ "$i" -eq "$idx" ] && tooltip="$tooltip> " || tooltip="$tooltip  "
+  tooltip="$tooltip$icon $name $ts-$te\n"
+done
+
+notify_schedule() {
+  local msg=""
+  for i in "${!SCHEDULE[@]}"; do
+    IFS='|' read -r s e icon name class <<< "${SCHEDULE[$i]}"
+    ts=$(fmt_time "$s"); te=$(fmt_time "$e")
+    [ "$i" -eq "$idx" ] && msg="$msg→ " || msg="$msg  "
+    msg="$msg$name  $ts-$te\n"
+  done
+  notify-send "Daily Schedule" "$msg"
+}
+
+# ── auto-notify on block change ──
+# Fires a notification whenever the schedule advances into a new block.
+# State is the index of the last block we notified about.
+STATE_FILE="${XDG_CACHE_HOME:-$HOME/.cache}/omarchy-daily-schedule.idx"
+
+notify_transition() {
+  local last=""
+  [ -f "$STATE_FILE" ] && last="$(cat "$STATE_FILE")"
+
+  # Nothing to do if we're still in the same block.
+  [ "$last" = "$idx" ] && return
+
+  # Record the new block first so a failed notify doesn't spam on next tick.
+  printf '%s' "$idx" > "$STATE_FILE"
+
+  # Skip the very first run after boot/reload (no prior state) to avoid noise.
+  [ -z "$last" ] && return
+
+  local ts te
+  ts=$(fmt_time "$cs"); te=$(fmt_time "$ce")
+  # -i "" suppresses any app icon; title is the plain name (no nerdfont glyph)
+  notify-send -a "Daily Schedule" -u normal -i "" \
+    -h string:x-canonical-private-synchronous:daily-schedule \
+    "$cn" "$ts - $te"
+}
+
+case "${1:-}" in
+  notify) notify_schedule ;;
+  *)      notify_transition
+          echo "{\"text\":\"$text\",\"tooltip\":\"$tooltip\",\"class\":\"$cc\"}" ;;
+esac

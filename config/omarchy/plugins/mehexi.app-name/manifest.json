@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "mehexi.app-name",
+  "name": "App name",
+  "version": "1.0.0",
+  "author": "mehexi",
+  "license": "MIT",
+  "description": "macOS-style bold name of the focused app.",
+  "kinds": ["bar-widget"],
+  "entryPoints": { "barWidget": "AppName.qml" },
+  "barWidget": {
+    "displayName": "App name",
+    "description": "Bold name of the focused app, like the macOS menu bar.",
+    "category": "Compositor",
+    "allowMultiple": false,
+    "defaultSection": "left"
+  }
+}

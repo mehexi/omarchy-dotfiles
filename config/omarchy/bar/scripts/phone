@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Tahoe Link phone status for the bar: battery of the linked phone.
+state=${XDG_CACHE_HOME:-$HOME/.cache}/tahoe-link/state.json
+[ -r "$state" ] || { echo '{"text":"","tooltip":"Tahoe Link not running"}'; exit 0; }
+jq -c '
+  if (.phones|length) == 0 then
+    {text: "󰥐", tooltip: (if (.paired|length)>0 then "Phone not connected" else "No phone paired — click to pair" end), class: "disconnected"}
+  else .phones[0] as $p |
+    ($p.battery.level // null) as $l |
+    {text: ("󰄜 " + (if $l then "\($l)%" else "" end) + (if $p.battery.charging then " 󱐋" else "" end)),
+     tooltip: "\($p.name) — \(if $l then "\($l)%" else "?" end)\(if $p.battery.charging then ", charging" else "" end)\nClick for Find My Phone, send files…",
+     class: (if ($l // 100) <= 15 then "critical" else "connected" end)}
+  end' "$state"

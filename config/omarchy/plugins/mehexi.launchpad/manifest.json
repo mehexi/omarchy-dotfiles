@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "mehexi.launchpad",
+  "name": "Launchpad",
+  "version": "1.0.0",
+  "author": "mehexi",
+  "license": "MIT",
+  "description": "macOS Tahoe-style app launcher: search, recent apps and category groups with animation.",
+  "kinds": ["menu"],
+  "keepLoaded": true,
+  "entryPoints": { "menu": "Launchpad.qml" }
+}

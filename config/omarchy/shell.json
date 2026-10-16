@@ -1,0 +1,104 @@
+{
+  "bar": {
+    "id": "mehexi.bar",
+    "layout": {
+      "center": [],
+      "left": [
+        {
+          "id": "omarchy.menu",
+          "joinNext": true
+        },
+        {
+          "id": "mehexi.app-name",
+          "joinPrev": true
+        }
+      ],
+      "right": [
+        {
+          "id": "mehexi.tray"
+        },
+        {
+          "id": "omarchy.indicators"
+        },
+        {
+          "id": "omarchy.system-update"
+        },
+        {
+          "id": "omarchy.keyboard-layout"
+        },
+        {
+          "id": "omarchy.bluetooth",
+          "hidden": true
+        },
+        {
+          "id": "omarchy.network",
+          "hidden": true
+        },
+        {
+          "id": "omarchy.audio",
+          "hidden": true
+        },
+        {
+          "id": "omarchy.monitor",
+          "hidden": true
+        },
+        {
+          "id": "omarchy.power",
+          "hidden": true
+        },
+        {
+          "id": "omarchy.workspaces"
+        },
+        {
+          "id": "mehexi.weather"
+        },
+        {
+          "id": "omarchy.agents"
+        },
+        {
+          "exec": "~/.config/omarchy/bar/scripts/daily-schedule",
+          "id": "daily-schedule",
+          "interval": 30,
+          "onClick": "~/.config/omarchy/bar/scripts/daily-schedule notify",
+          "tooltip": "Daily schedule",
+          "type": "command",
+          "swapOnHover": true
+        },
+        {
+          "format": "ddd d MMM HH:mm",
+          "formatAlt": "d MMMM 'W'ww yyyy",
+          "id": "mehexi.clock",
+          "verticalFormat": "HH\n—\nmm"
+        },
+        {
+          "id": "mehexi.phone"
+        },
+        {
+          "id": "mehexi.control-center",
+          "pill": false
+        }
+      ]
+    },
+    "position": "top",
+    "transparent": false
+  },
+  "idle": {
+    "lock": 300,
+    "screensaver": 150
+  },
+  "plugins": [
+    {
+      "id": "mehexi.launchpad"
+    },
+    {
+      "id": "mehexi.lock"
+    }
+  ],
+  "version": 1,
+  "disabledPlugins": [
+    "omarchy.lock"
+  ],
+  "cloneSourceRestores": [
+    "mehexi.lock"
+  ]
+}

@@ -1,0 +1,10 @@
+#!/bin/bash
+PID_FILE="/tmp/quickshell-appdrawer.pid"
+
+if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
+  kill "$(cat "$PID_FILE")" 2>/dev/null
+  rm -f "$PID_FILE"
+else
+  quickshell -c appdrawer &
+  echo $! > "$PID_FILE"
+fi
