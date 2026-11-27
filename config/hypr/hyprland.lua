@@ -22,29 +22,19 @@ require("hypr.bindings")
 require("hypr.looknfeel")
 require("hypr.autostart")
 
+
 -- Toggle config flags dynamically.
 require("default.hypr.toggles")
 
 -- Add any other personal Hyprland configuration below.
 -- o.window("qemu", { workspace = "5" })
 
--- Launchpad (mehexi.launchpad): frosted full-screen backdrop, shell animates itself.
-hl.layer_rule({ match = { namespace = "mehexi-launchpad" }, blur = true, ignore_alpha = 0.3, no_anim = true, animation = "none" })
--- Control center (mehexi.control-center) glass card. Omarchy's own panels share
--- this namespace but have opaque cards, so only translucent ones look frosted.
-hl.layer_rule({ match = { namespace = "omarchy-keyboard-panel" }, blur = true, ignore_alpha = 0.3 })
+-- Glass surfaces: summoned shell popups (polkit, clipboard, emojis) use the
+-- bar's sans instead of monospace. Takes effect on the next shell start.
+hl.env("OMARCHY_MENU_FONT", "Adwaita Sans")
 
--- Tahoe Link screen mirroring (scrcpy): docked on the right edge at full height, on
--- the workspace it opens on. These rules just place it roughly on open; tahoe-link
--- then sizes it to the phone's exact shape (and on rotation) and, while its workspace
--- is on screen, widens the right gap so tiled windows fill the rest.
-o.window("scrcpy", {
-  float = true,
-  size = { "(monitor_h-50)*0.45", "monitor_h-50" },
-  move = { "monitor_w-window_w-12", "38" },
-})
+do local p = os.getenv("HOME") .. "/.config/hypr/theme_studio_border.lua"; local f = io.open(p); if f then f:close(); dofile(p) end end  -- Theme Studio: window border colors (written by its panel)
+do local p = os.getenv("HOME") .. "/.config/hypr/recessed_windows.lua"; local f = io.open(p); if f then f:close(); dofile(p) end end  -- Depth: recessed/raised windows (written by its panel)
 
--- Dock (mehexi.dock): frosted pill on the bottom edge. Same deal as the
--- Launchpad above — Hyprland blurs what's under the layer above alpha 0.3,
--- and the plugin keeps its glass tint above that.
-hl.layer_rule({ match = { namespace = "mehexi-dock" }, blur = true, ignore_alpha = 0.3 })
+do local d = debug.getinfo(1, "S").source:match("^@(.*/)") or os.getenv("HOME") .. "/.config/hypr/"; local p = d .. "tricky-tiles.lua"; local f = io.open(p); if f then f:close(); dofile(p) end end -- Tricky Tiles (remove via its panel)
+do local d = debug.getinfo(1, "S").source:match("^@(.*/)") or os.getenv("HOME") .. "/.config/hypr/"; local p = d .. "softly.lua"; local f = io.open(p); if f then f:close(); dofile(p) end end -- Softly (remove via its panel)

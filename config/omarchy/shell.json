@@ -1,147 +1,141 @@
 {
   "bar": {
-    "id": "mehexi.bar",
+    "centerAnchor": "",
+    "id": "denon.shell",
     "layout": {
-      "center": [],
-      "left": [
-        {
-          "id": "omarchy.menu",
-          "joinNext": true
-        },
-        {
-          "id": "mehexi.app-name",
-          "joinPrev": true
-        }
-      ],
-      "right": [
-        {
-          "id": "mehexi.tray"
-        },
-        {
-          "id": "omarchy.indicators"
-        },
-        {
-          "id": "omarchy.system-update"
-        },
-        {
-          "id": "omarchy.workspaces"
-        },
-        {
-          "id": "omarchy.agents"
-        },
-        {
-          "id": "mehexi.weather"
-        },
+      "center": [
         {
           "id": "omarchy.keyboard-layout"
         },
         {
-          "id": "omarchy.bluetooth",
-          "hidden": true
-        },
-        {
-          "id": "omarchy.network",
-          "hidden": true
-        },
-        {
-          "id": "omarchy.audio",
-          "hidden": true
-        },
-        {
-          "id": "omarchy.monitor",
-          "hidden": true
-        },
-        {
-          "id": "omarchy.power",
-          "hidden": true
-        },
-        {
-          "exec": "~/.config/omarchy/bar/scripts/daily-schedule",
-          "id": "daily-schedule",
-          "interval": 30,
-          "onClick": "~/.config/omarchy/bar/scripts/daily-schedule notify",
-          "tooltip": "Daily schedule",
-          "type": "command",
-          "swapOnHover": true
-        },
-        {
-          "format": "ddd d MMM HH:mm",
+          "format": "ddd, MMM d  \u00b7  h:mm AP",
           "formatAlt": "d MMMM 'W'ww yyyy",
-          "id": "mehexi.clock",
-          "verticalFormat": "HH\n—\nmm"
+          "id": "denon.clock",
+          "verticalFormat": "h\nmm\nAP"
         },
         {
-          "id": "mehexi.bt-battery"
+          "id": "denon.weather"
         },
         {
-          "id": "disk-usage",
-          "type": "command",
-          "exec": "~/.config/omarchy/bar/scripts/disk-usage",
-          "interval": 60,
-          "tooltip": "Disk usage",
-          "onClick": "~/.config/omarchy/bar/scripts/disk-usage notify",
-          "onRightClick": "omarchy-launch-terminal btop"
+          "id": "omarchy.system-update"
+        }
+      ],
+      "left": [
+        {
+          "id": "denon.agents"
         },
         {
-          "id": "mehexi.phone"
-        },
+          "id": "denon.workspaces"
+        }
+      ],
+      "right": [
         {
-          "id": "omarchy.elsewhen",
-          "cities": [
-            {
-              "name": "Dhaka",
-              "zone": "Asia/Dhaka"
-            },
-            {
-              "name": "Tokyo",
-              "zone": "Asia/Tokyo"
-            },
-            {
-              "name": "Los Angeles",
-              "zone": "America/Los_Angeles"
-            },
-            {
-              "name": "New York",
-              "zone": "America/New_York"
-            },
-            {
-              "name": "London",
-              "zone": "Europe/London"
-            }
+          "id": "denon.tray",
+          "pinned": [
+            "snip"
           ]
         },
         {
-          "id": "mehexi.control-center",
-          "pill": false
+          "id": "denon.studio"
+        },
+        {
+          "id": "denon.glass",
+          "studio": true
+        },
+        {
+          "id": "denon.recess",
+          "studio": true
+        },
+        {
+          "id": "io.github.denonmaryland.tricky-tiles",
+          "studio": true
+        },
+        {
+          "id": "denon.monitor",
+          "studio": true
+        },
+        {
+          "id": "io.github.denonmaryland.theme-studio"
+        },
+        {
+          "hotkey": "Alt_R",
+          "id": "io.github.denonmaryland.softly",
+          "hidden": true
+        },
+        {
+          "id": "denon.network",
+          "hidden": true
+        },
+        {
+          "id": "denon.bluetooth",
+          "hidden": true
+        },
+        {
+          "id": "denon.audio",
+          "hidden": true
+        },
+        {
+          "id": "denon.dropbox",
+          "hidden": true
+        },
+        {
+          "id": "denon.power",
+          "hidden": true
+        },
+        {
+          "id": "mehexi.phone",
+          "hidden": true
+        },
+        {
+          "id": "denon.corner"
         }
       ],
       "centerBegin": [],
       "centerEnd": [],
       "tray": []
     },
-    "position": "top",
+    "position": "left",
     "transparent": false
   },
+  "cloneSourceRestores": [
+    "denon.battery",
+    "denon.notifications",
+    "denon.menu",
+    "denon.osd",
+    "denon.polkit",
+    "hello-lock"
+  ],
+  "disabledPlugins": [
+    "omarchy.battery",
+    "omarchy.notifications",
+    "omarchy.menu",
+    "omarchy.osd",
+    "omarchy.polkit",
+    "omarchy.lock"
+  ],
   "idle": {
     "lock": 300,
     "screensaver": 150
   },
   "plugins": [
     {
-      "id": "mehexi.launchpad"
+      "id": "io.github.denonmaryland.softly"
+    },
+    {
+      "id": "denon.notifications"
+    },
+    {
+      "id": "denon.osd"
+    },
+    {
+      "id": "denon.polkit"
+    },
+    {
+      "id": "denon.menu"
     },
     {
       "id": "mehexi.lock"
-    },
-    {
-      "id": "mehexi.dock"
     }
   ],
-  "version": 1,
-  "disabledPlugins": [
-    "omarchy.lock"
-  ],
-  "cloneSourceRestores": [
-    "mehexi.lock"
-  ]
+  "version": 1
 }

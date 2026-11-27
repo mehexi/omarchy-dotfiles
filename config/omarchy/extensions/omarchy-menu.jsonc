@@ -54,5 +54,7 @@
   "vpn.country.us": {"icon":"🇺🇸","label":"United States","action":"~/.config/omarchy/bar/scripts/protonvpn connect US","checked":"~/.config/omarchy/bar/scripts/protonvpn is-country US"},
   "vpn.country.jp": {"icon":"🇯🇵","label":"Japan","action":"~/.config/omarchy/bar/scripts/protonvpn connect JP","checked":"~/.config/omarchy/bar/scripts/protonvpn is-country JP"},
   "vpn.country.ro": {"icon":"🇷🇴","label":"Romania","action":"~/.config/omarchy/bar/scripts/protonvpn connect RO","checked":"~/.config/omarchy/bar/scripts/protonvpn is-country RO"},
-  "vpn.country.pl": {"icon":"🇵🇱","label":"Poland","action":"~/.config/omarchy/bar/scripts/protonvpn connect PL","checked":"~/.config/omarchy/bar/scripts/protonvpn is-country PL"}
+  "vpn.country.pl": {"icon":"🇵🇱","label":"Poland","action":"~/.config/omarchy/bar/scripts/protonvpn connect PL","checked":"~/.config/omarchy/bar/scripts/protonvpn is-country PL"},
+  // Added by Hello Lock: opens its settings. Turn off in Settings > Lock screen.
+  "appearance.lockscreen": {"icon":"","label":"Lock Screen","description":"Hello Lock settings","aliases":["lock screen","hello lock"],"when":"[[ -d ~/.config/omarchy/plugins/hello-lock ]]","action":"omarchy-shell lock settings"},
 }

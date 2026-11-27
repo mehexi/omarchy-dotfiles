@@ -1,0 +1,3 @@
+io.github.denonmaryland.theme-studio https://github.com/denonmaryland/omarchy-theme-studio
+io.github.denonmaryland.tricky-tiles https://github.com/denonmaryland/omarchy-tricky-tiles
+io.github.denonmaryland.softly https://github.com/denonmaryland/omarchy-softly
