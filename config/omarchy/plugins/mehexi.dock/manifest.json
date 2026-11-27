@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "mehexi.dock",
+  "name": "Dock",
+  "version": "1.0.0",
+  "author": "mehexi",
+  "license": "MIT",
+  "description": "macOS Tahoe-style dock: frosted strip of pinned and running apps on the bottom edge, with hover magnification and running dots.",
+  "kinds": [
+    "panel"
+  ],
+  "keepLoaded": true,
+  "entryPoints": {
+    "panel": "Main.qml"
+  }
+}

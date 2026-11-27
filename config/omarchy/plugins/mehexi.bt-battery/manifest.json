@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "mehexi.bt-battery",
+  "name": "Bluetooth Battery",
+  "version": "1.0.0",
+  "author": "mehexi",
+  "license": "MIT",
+  "description": "Battery level of connected Bluetooth devices, in the bar with a popup list.",
+  "kinds": ["bar-widget"],
+  "entryPoints": { "barWidget": "Panel.qml" },
+  "barWidget": {
+    "displayName": "Bluetooth Battery",
+    "description": "Shows the battery percentage of connected Bluetooth devices; hides itself when none report one.",
+    "category": "System",
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "defaults": {
+      "showName": false,
+      "warnAt": 30,
+      "criticalAt": 15,
+      "maxInBar": 2
+    },
+    "schema": [
+      { "key": "showName", "type": "boolean", "label": "Show device name in the bar" },
+      { "key": "warnAt", "type": "number", "label": "Warn below (%)" },
+      { "key": "criticalAt", "type": "number", "label": "Critical below (%)" },
+      { "key": "maxInBar", "type": "number", "label": "Max devices shown in the bar" }
+    ]
+  }
+}

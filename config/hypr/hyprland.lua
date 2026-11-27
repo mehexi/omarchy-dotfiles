@@ -43,3 +43,8 @@ o.window("scrcpy", {
   size = { "(monitor_h-50)*0.45", "monitor_h-50" },
   move = { "monitor_w-window_w-12", "38" },
 })
+
+-- Dock (mehexi.dock): frosted pill on the bottom edge. Same deal as the
+-- Launchpad above — Hyprland blurs what's under the layer above alpha 0.3,
+-- and the plugin keeps its glass tint above that.
+hl.layer_rule({ match = { namespace = "mehexi-dock" }, blur = true, ignore_alpha = 0.3 })

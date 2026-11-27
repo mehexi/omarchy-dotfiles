@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+# Print disk usage for the Omarchy bar (Waybar-style JSON).
+# Usage: disk-usage [mountpoint]        -> JSON for the bar
+#        disk-usage notify [mountpoint] -> desktop notification with the breakdown
+#
+# Only "active" highlights the pill (Bar.qml reads class === "active"), so the
+# widget goes active once usage crosses CRITICAL.
+
+set -euo pipefail
+
+WARNING=80
+CRITICAL=90
+
+mode="bar"
+if [ "${1:-}" = "notify" ]; then
+  mode="notify"
+  shift
+fi
+mount="${1:-/}"
+
+# On a left/right bar every module is only as wide as the bar (~28px), so a
+# horizontal " 39%" label gets clipped. Stack it over two short lines instead.
+vertical_bar() {
+  local pos
+  pos=$(jq -r '.bar.position // "top"' "${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/shell.json" 2>/dev/null) || return 1
+  [ "$pos" = "left" ] || [ "$pos" = "right" ]
+}
+
+read -r pcent used size avail < <(
+  df -h --output=pcent,used,size,avail "$mount" 2>/dev/null | tail -1
+) || true
+
+if [ -z "${pcent:-}" ]; then
+  printf '{"text":"n/a","tooltip":"Disk usage unavailable for %s","class":"error"}\n' "$mount"
+  exit 0
+fi
+
+pct=${pcent%\%}
+pct=${pct// /}
+
+if   [ "$pct" -ge "$CRITICAL" ]; then cls="active"
+elif [ "$pct" -ge "$WARNING" ];  then cls="warning"
+else cls="normal"; fi
+
+tooltip=$(printf 'Disk %s — %s%% full\\n%s used of %s · %s free' \
+  "$mount" "$pct" "$used" "$size" "$avail")
+
+if [ "$mode" = "notify" ]; then
+  notify-send -a "Disk" "Disk $mount — $pct% full" \
+    "$used used of $size"$'\n'"$avail free"
+  exit 0
+fi
+
+if vertical_bar; then
+  text="󰋊\\n$pct%"
+else
+  text="󰋊 $pct%"
+fi
+
+printf '{"text":"%s","tooltip":"%s","class":"%s"}\n' "$text" "$tooltip" "$cls"

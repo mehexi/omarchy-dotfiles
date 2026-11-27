@@ -24,6 +24,15 @@
           "id": "omarchy.system-update"
         },
         {
+          "id": "omarchy.workspaces"
+        },
+        {
+          "id": "omarchy.agents"
+        },
+        {
+          "id": "mehexi.weather"
+        },
+        {
           "id": "omarchy.keyboard-layout"
         },
         {
@@ -47,15 +56,6 @@
           "hidden": true
         },
         {
-          "id": "omarchy.workspaces"
-        },
-        {
-          "id": "mehexi.weather"
-        },
-        {
-          "id": "omarchy.agents"
-        },
-        {
           "exec": "~/.config/omarchy/bar/scripts/daily-schedule",
           "id": "daily-schedule",
           "interval": 30,
@@ -71,13 +71,53 @@
           "verticalFormat": "HH\n—\nmm"
         },
         {
+          "id": "mehexi.bt-battery"
+        },
+        {
+          "id": "disk-usage",
+          "type": "command",
+          "exec": "~/.config/omarchy/bar/scripts/disk-usage",
+          "interval": 60,
+          "tooltip": "Disk usage",
+          "onClick": "~/.config/omarchy/bar/scripts/disk-usage notify",
+          "onRightClick": "omarchy-launch-terminal btop"
+        },
+        {
           "id": "mehexi.phone"
+        },
+        {
+          "id": "omarchy.elsewhen",
+          "cities": [
+            {
+              "name": "Dhaka",
+              "zone": "Asia/Dhaka"
+            },
+            {
+              "name": "Tokyo",
+              "zone": "Asia/Tokyo"
+            },
+            {
+              "name": "Los Angeles",
+              "zone": "America/Los_Angeles"
+            },
+            {
+              "name": "New York",
+              "zone": "America/New_York"
+            },
+            {
+              "name": "London",
+              "zone": "Europe/London"
+            }
+          ]
         },
         {
           "id": "mehexi.control-center",
           "pill": false
         }
-      ]
+      ],
+      "centerBegin": [],
+      "centerEnd": [],
+      "tray": []
     },
     "position": "top",
     "transparent": false
@@ -92,6 +132,9 @@
     },
     {
       "id": "mehexi.lock"
+    },
+    {
+      "id": "mehexi.dock"
     }
   ],
   "version": 1,

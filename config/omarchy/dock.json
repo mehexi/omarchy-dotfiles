@@ -1,0 +1,19 @@
+{
+  "pinned": [
+    "chromium",
+    "foot",
+    "nvim",
+    "org.gnome.Nautilus",
+    "localsend",
+    "steam"
+  ],
+  "iconSize": 36,
+  "magnify": 1.3,
+  "autohide": true,
+  "showRunning": true,
+  "showLaunchpad": true,
+  "monitors": [],
+  "showOnEmptyWorkspace": true,
+  "showBackground": false,
+  "bottomMargin": 0
+}

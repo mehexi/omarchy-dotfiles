@@ -17,6 +17,7 @@ PATHS=(
   omarchy/hooks
   omarchy/shell.json
   omarchy/shell.toml
+  omarchy/dock.json
   hypr/hyprland.lua
   hypr/bindings.lua
   hypr/looknfeel.lua
