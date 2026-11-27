@@ -51,6 +51,12 @@ PATCHED=(
 # install.sh must not overwrite another PC's displays or its autostart.
 HYPR_LOCAL=(monitors.lua autostart.lua)
 
+# Plugins kept off the public repo. They are mine and tied to my own machines
+# rather than to the look, so they stay local. Their entries are also stripped
+# out of the published shell.json, so the bar never points at a plugin that
+# isn't shipped.
+PRIVATE_PLUGINS=(mehexi.phone mehezi.protonvpn mehezi.keywatch)
+
 EXCLUDES=(
   --exclude='.git' --exclude='.git/**'
   --exclude='*.bak' --exclude='*.bak.*' --exclude='*.bak2.*'
@@ -74,6 +80,27 @@ for e in "${EXTERNALS[@]}"; do
 done
 # Hello Lock ships with denon's dots but this setup uses mehexi.lock instead.
 rm -rf "$DST/omarchy/plugins/hello-lock"
+
+# Keep my own machine-tied plugins out, and out of the published bar layout.
+for p in "${PRIVATE_PLUGINS[@]}"; do
+  rm -rf "$DST/omarchy/plugins/$p"
+done
+PRIVATE_IDS="${PRIVATE_PLUGINS[*]}" python3 -I - "$DST/omarchy/shell.json" <<'PY'
+import json, os, sys
+path = sys.argv[1]
+drop = set(os.environ['PRIVATE_IDS'].split())
+try:
+    with open(path) as f:
+        d = json.load(f)
+except (OSError, ValueError) as e:
+    sys.exit(f'could not rewrite published shell.json: {e}')
+d['plugins'] = [p for p in d.get('plugins', []) if p.get('id') not in drop]
+for side, items in (d.get('bar', {}).get('layout') or {}).items():
+    d['bar']['layout'][side] = [w for w in items if w.get('id') not in drop]
+d['disabledPlugins'] = [p for p in d.get('disabledPlugins', []) if p not in drop]
+with open(path, 'w') as f:
+    json.dump(d, f, indent=2)
+PY
 
 # Machine-specific hypr files stay on the machine.
 for f in "${HYPR_LOCAL[@]}"; do

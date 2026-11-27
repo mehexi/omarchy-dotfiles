@@ -60,10 +60,11 @@ I changed live in `patches/` and are laid back over the fresh clone.
 - **No battery on a desktop.** UPower hands out a placeholder battery device on
   machines that have none, which the control corner painted as a permanent
   "On battery · 0%". Now gated on `isLaptopBattery`; a laptop still shows its pack.
-- **The phone in its place.** With no battery, that slot in the fan shows the
-  linked Android phone instead — name, charge and charging state from
-  [tahoe-link](https://github.com/mehexi)'s state file, in the battery's own type
-  scale. Click it for the full card.
+- **The phone in its place.** With no battery, that slot in the fan shows a linked
+  Android phone instead — name, charge and charging state read from my own
+  tahoe-link daemon's state file, in the battery's own type scale. That daemon and
+  its bar plugin aren't in this repo, so on any other machine the slot simply stays
+  empty and the fan falls back to its no-battery layout.
 - **Brightness over DDC.** The corner read brightness with `brightnessctl`, which
   with no device argument returns the first entry in `/sys/class/backlight` — on a
   desktop that is often a NIC LED, so it always showed 0. It now uses

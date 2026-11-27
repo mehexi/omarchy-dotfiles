@@ -83,10 +83,6 @@ rsync -a "$REPO/config/" "$HOME/.config/"
 find "$HOME/.config/omarchy/bar/scripts" "$HOME/.config/omarchy/bin" "$HOME/.config/omarchy/hooks" \
   -type f ! -name '*.json' -exec chmod +x {} + 2>/dev/null || true
 
-# keywatch plugin had the old username baked in
-sed -i "s|/home/[^/]*/.config/omarchy/plugins|$HOME/.config/omarchy/plugins|g" \
-  "$HOME/.config/omarchy/plugins/mehezi.keywatch/KeyWatch.qml" 2>/dev/null || true
-
 # --- 3. Helper scripts outside ~/.config ------------------------------------
 if [[ -d $REPO/local ]]; then
   say "Installing helper scripts into ~/.local"
